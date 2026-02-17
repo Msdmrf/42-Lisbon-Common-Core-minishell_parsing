@@ -1,1 +1,2 @@
-Minishell’s Parser converts user input into executable commands: it tokenizes input (lexer), checks syntax, expands variables and exit codes, handles quotes correctly, builds command structures, and manages signals for proper interactive shell behavior.
+# 42-Lisbon-Common-Core-minishell_parsing
+Minishell’s Parsing converts user input into executable commands: it tokenizes input (lexer), checks syntax, expands variables and exit codes, handles quotes correctly, builds command structures, and manages signals for proper interactive shell behavior.
