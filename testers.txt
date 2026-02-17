@@ -1,0 +1,1156 @@
+Testers:
+https://github.com/LucasKuhn/minishell_tester.git
+https://github.com/zstenger93/42_minishell_tester.git
+
+For minishell_tester_LucasKuhn:
+cd minishell
+make
+git clone https://github.com/LucasKuhn/minishell_tester.git minishell_tester_LucasKuhn
+cd minishell_tester_LucasKuhn
+./tester
+
+
+
+
+
+For minishell_tester_zstenger93:
+cd minishell
+git clone https://github.com/zstenger93/42_minishell_tester.git minishell_tester_zstenger93
+cd minishell_tester_zstenger93
+vim tester.sh
+	# Change if you store the tester in another PATH
+	export MINISHELL_PATH=../
+	export EXECUTABLE=minishell
+	RUNDIR=minishell_tester_zstenger93
+
+# Add three static functions before shell_loop() in main.c file to respect the GitHub Repository Instructions
+
+static char	*ft_strjoin_char(char *s, char c)
+{
+	char	*result;
+	size_t	len;
+	size_t	i;
+
+	if (!s)
+		return (NULL);
+	len = ft_strlen(s);
+	result = malloc(len + 2);
+	if (!result)
+		return (free(s), NULL);
+	i = 0;
+	while (i < len)
+	{
+		result[i] = s[i];
+		i++;
+	}
+	result[i] = c;
+	result[i + 1] = '\0';
+	return (result);
+}
+
+static char	get_unclosed_quote_type(char *str)
+{
+	int		i;
+	char	quote;
+
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] == '\'' || str[i] == '"')
+		{
+			quote = str[i];
+			i++;
+			while (str[i] && str[i] != quote)
+				i++;
+			if (!str[i])
+				return (quote);
+			i++;
+		}
+		else
+			i++;
+	}
+	return (0);
+}
+
+static char	*read_line_no_buffer(int fd)
+{
+	char	buffer[1];
+	char	*line;
+	char	*tmp;
+	int		ret;
+
+	line = ft_strdup("");
+	if (!line)
+		return (NULL);
+	while (1)
+	{
+		ret = read(fd, buffer, 1);
+		if (ret <= 0)
+		{
+			if (ft_strlen(line) == 0)
+				return (free(line), NULL);
+			return (line);
+		}
+		if (buffer[0] == '\n' && !get_unclosed_quote_type(line))
+			return (line);
+		tmp = line;
+		line = ft_strjoin_char(tmp, buffer[0]);
+		free(tmp);
+		if (!line)
+			return (NULL);
+	}
+}
+
+# Change the shell_loop() function in main.c file to respect the GitHub Repository Instructions from
+
+static void	shell_loop(void)
+{
+	char	*input;
+	int		validation_result;
+
+	while (1)
+	{
+		input = readline("minishell$ ");
+		validation_result = validate_input(input);
+		if (validation_result == 1)
+			break ;
+		else if (validation_result == 2)
+		{
+			free(input);
+			continue ;
+		}
+		if (!*input)
+		{
+			free(input);
+			continue ;
+		}
+		add_history(input);
+		process_and_execute(input);
+		free(input);
+	}
+}
+
+to
+
+static void	shell_loop(void)
+{
+	char	*input;
+	int		validation_result;
+	int		is_interactive;
+
+	is_interactive = isatty(STDIN_FILENO);
+	while (1)
+	{
+		if (is_interactive)
+			input = readline("minishell$ ");
+		else
+			input = read_line_no_buffer(STDIN_FILENO);
+		if (!input)
+			break ;
+		validation_result = validate_input(input);
+		if (validation_result == 2)
+		{
+			free(input);
+			continue ;
+		}
+		if (!*input)
+		{
+			free(input);
+			continue ;
+		}
+		if (is_interactive)
+			add_history(input);
+		process_and_execute(input);
+		free(input);
+		if (!is_interactive && shell()->exit_code == 2)
+			break ;
+		if (shell()->should_exit)
+			break ;
+	}
+}
+
+# Add four static functions before heredoc_child() in heredoc.c file to respect the GitHub Repository Instructions
+
+static char	*ft_strjoin_char(char *s, char c)
+{
+	char	*result;
+	size_t	len;
+	size_t	i;
+
+	if (!s)
+		return (NULL);
+	len = ft_strlen(s);
+	result = malloc(len + 2);
+	if (!result)
+		return (free(s), NULL);
+	i = 0;
+	while (i < len)
+	{
+		result[i] = s[i];
+		i++;
+	}
+	result[i] = c;
+	result[i + 1] = '\0';
+	return (result);
+}
+
+static char	get_unclosed_quote_type(char *str)
+{
+	int		i;
+	char	quote;
+
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] == '\'' || str[i] == '"')
+		{
+			quote = str[i];
+			i++;
+			while (str[i] && str[i] != quote)
+				i++;
+			if (!str[i])
+				return (quote);
+			i++;
+		}
+		else
+			i++;
+	}
+	return (0);
+}
+
+static char	*read_line_no_buffer(int fd)
+{
+	char	buffer[1];
+	char	*line;
+	char	*tmp;
+	int		ret;
+
+	line = ft_strdup("");
+	if (!line)
+		return (NULL);
+	while (1)
+	{
+		ret = read(fd, buffer, 1);
+		if (ret <= 0)
+		{
+			if (ft_strlen(line) == 0)
+				return (free(line), NULL);
+			return (line);
+		}
+		if (buffer[0] == '\n' && !get_unclosed_quote_type(line))
+			return (line);
+		tmp = line;
+		line = ft_strjoin_char(tmp, buffer[0]);
+		free(tmp);
+		if (!line)
+			return (NULL);
+	}
+}
+
+static char	*read_heredoc_line(void)
+{
+	if (isatty(STDIN_FILENO))
+		return (readline("> "));
+	return (read_line_no_buffer(STDIN_FILENO));
+}
+
+# Change one line from the static heredoc_child() function in heredoc.c file to respect the GitHub Repository Instructions from
+
+static void	heredoc_child(int hd_expand, char *delimiter, int write_fd)
+{
+	char	*line;
+
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_IGN);
+	while (1)
+	{
+		line = readline("> ");							<------------ This line!
+		if (!line || ft_strcmp(line, delimiter) == 0)
+		{
+			free(line);
+			break ;
+		}
+		write_heredoc_line(hd_expand, write_fd, line);
+		free(line);
+	}
+	close(write_fd);
+	exit(0);
+}
+
+to
+
+static void	heredoc_child(int hd_expand, char *delimiter, int write_fd)
+{
+	char	*line;
+
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_IGN);
+	while (1)
+	{
+		line = read_heredoc_line();						<------------ To this line!
+		if (!line || ft_strcmp(line, delimiter) == 0)
+		{
+			free(line);
+			break ;
+		}
+		write_heredoc_line(hd_expand, write_fd, line);
+		free(line);
+	}
+	close(write_fd);
+	exit(0);
+}
+
+# Change one condition line from the int ft_exit function in builtin_exit.c file to respect the GitHub Repository Instructions from
+
+int	ft_exit(char **args)
+{
+	long	code;
+
+	ft_putstr_fd("exit\n", 1);
+	if (!args[1])
+	{
+		shell()->should_exit = 1;
+		return (shell()->exit_code);
+	}
+	if (!parse_exit_code(args[1], &code))
+		return (exit_numeric_error(args[1]));
+	if (args[2])
+		return (exit_too_many_args());
+	shell()->should_exit = 1;
+	shell()->exit_code = (unsigned char)code;
+	return ((unsigned char)code);
+}
+
+to
+
+int	ft_exit(char **args)
+{
+	long	code;
+
+	if (isatty(STDIN_FILENO))		<------------ Add this condition!
+		ft_putstr_fd("exit\n", 1);
+	if (!args[1])
+	{
+		shell()->should_exit = 1;
+		return (shell()->exit_code);
+	}
+	if (!parse_exit_code(args[1], &code))
+		return (exit_numeric_error(args[1]));
+	if (args[2])
+		return (exit_too_many_args());
+	shell()->should_exit = 1;
+	shell()->exit_code = (unsigned char)code;
+	return ((unsigned char)code);
+}
+
+To run mandatory tests: bash tester.sh m
+To run mandatory tests with valgrind: bash tester.sh vm
+To run tests without environment: bash tester.sh ne
+To run mandatory pipe segfault tests (BRUTAL): bash tester.sh d
+
+
+
+
+
+💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧
+💧                                                                                         💧
+💧    ██████ █   █ █ █     ████      █     █████ █████ █   █ █████     █████ █   █ ████    💧
+💧   █       █   █ █ █     █   █     █     █     █   █ █  █  █         █   █ ██  █ █   █   💧
+💧   █       █████ █ █     █   █     █     ████  █████ ███   █████     █████ █ █ █ █   █   💧
+💧   █       █   █ █ █     █   █     █     █     █   █ █  █      █     █   █ █  ██ █   █   💧
+💧    ██████ █   █ █ █████ ████      █████ █████ █   █ █   █ █████     █   █ █   █ ████    💧
+💧                                                                                         💧
+💧          █   █ █   █  ██████ █     █████ █████ █████ ████      █████ ████  █████        💧
+💧          █   █ ██  █ █       █     █   █ █     █     █   █     █     █   █ █            💧
+💧          █   █ █ █ █ █       █     █   █ █████ ████  █   █     ████  █   █ █████        💧
+💧          █   █ █  ██ █       █     █   █     █ █     █   █     █     █   █     █        💧
+💧           ███  █   █  ██████ █████ █████ █████ █████ ████      █     ████  █████        💧
+💧                                                                                         💧
+💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧💧
+
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+🚀                                 GENERAL TESTS:                                🚀
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+
+Test 1 [LEAKS?]
+make v
+minishell$ "echo hello | \"\" | cat"
+minishell: echo hello | "" | cat: command not found
+minishell$ exit
+
+Test 2 [LEAKS?]
+make v
+minishell$ unset EMPTY
+minishell$ echo hello | \$EMPTY | cat
+minishell: $EMPTY: command not found
+minishell$ exit
+
+Test 3 [LEAKS?]
+make v
+minishell$ export VAR=\"\"
+minishell$ echo hello | \$VAR | cat
+minishell: $VAR: command not found
+minishell$ exit
+
+Test 4 [LEAKS?]
+make v
+minishell$ echo test | \"\" | \"\" | cat
+minishell: "" | "" | cat: command not found
+minishell$ exit
+
+Test 5 [LEAKS?]
+make v
+minishell$ nonexistent_command_xyz
+minishell: nonexistent_command_xyz: command not found
+minishell$ exit
+
+Test 6 [LEAKS?]
+make v
+minishell$ /etc/passwd
+minishell: /etc/passwd: Permission denied
+minishell$ exit
+
+Test 7 [LEAKS?]
+make v
+minishell$ /tmp
+minishell: /tmp: Is a directory
+minishell$ exit
+
+Test 8 [LEAKS?]
+make v
+minishell$ /path/to/nowhere/file
+minishell: /path/to/nowhere/file: No such file or directory
+minishell$ exit
+
+Test 9 [LEAKS?]
+make v
+minishell$ unset PATH
+minishell$ ls 2>/dev/null
+minishell: ls: command not found
+minishell$ exit
+
+Test 10 [LEAKS?]
+make v
+minishell$ mkdir -p /tmp/testdir
+minishell$ ls > /tmp/testdir
+minishell: /tmp/testdir: Is a directory
+minishell$ rmdir /tmp/testdir
+minishell$ exit
+
+Test 11 [LEAKS?]
+make v
+minishell$ export EMPTY=\"\"
+minishell$ echo test | \$EMPTY < /nonexistent_file
+minishell: /nonexistent_file: No such file or directory
+minishell$ exit
+
+Test 12 [LEAKS?]
+make v
+minishell$ echo test | cat < /nonexistent_file
+minishell: /nonexistent_file: No such file or directory
+minishell$ exit
+
+Test 13 [LEAKS?]
+make v
+minishell$ echo hello | export TEST=value | cat
+minishell$ exit
+
+Test 14 [LEAKS?]
+make v
+minishell$ nonexistent_cmd | cat
+minishell: nonexistent_cmd: command not found
+minishell$ exit
+
+Test 15 [LEAKS?]
+make v
+minishell$ echo a | cat | cat | cat | cat
+a
+minishell$ exit
+
+Test 16 [LEAKS?]
+make v
+minishell$ echo hello | export X=1 > /tmp/test_out | cat
+minishell$ exit
+
+Test 17 [LEAKS?]
+make v
+minishell$ cat << END
+> line 1
+> line 2
+> END
+line 1
+line 2
+minishell$ exit
+
+Test 18 [LEAKS?]
+make v
+minishell$ echo test | << END
+> line 1
+> line 2
+> END
+minishell$ exit
+
+Test 19 [LEAKS?]
+make v
+minishell$ cat << EOF << END
+> line 1
+> EOF
+> line 2
+> END
+line 2
+minishell$ exit
+
+Test 20 [LEAKS?]
+make v
+minishell$ echo test | << EOF | << END
+> line 1
+> EOF
+> line 2
+> END
+minishell$ exit
+
+Test 21 [LEAKS?]
+make v
+minishell$ cat << EOF << END << OLA
+> line 1
+> EOF
+> line 2
+> END
+> line 3
+> OLA
+line 3
+minishell$ exit
+
+Test 22 [LEAKS?]
+make v
+minishell$ echo test | << EOF | << END | << OLA
+> line 1
+> EOF
+> line 2
+> END
+> line 3
+> OLA
+minishell$ exit
+
+
+
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+🚀                                  CTRL+C TESTS:                                🚀
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+
+Test 23 [LEAKS?]
+make v
+minishell$ CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 24 [LEAKS?]
+make v
+minishell$ sleep 3
+CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 25 [LEAKS?]
+make v
+minishell$ export VAR=value << EOF
+> line 1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ echo $VAR
+
+minishell$ exit
+
+Test 26 [LEAKS?]
+make v
+minishell$ cd /tmp << EOF
+> line 1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ pwd
+/home/msdmrf/Documents/42lisboa/migusant/common/minishell
+minishell$ exit
+
+Test 27 [LEAKS?]
+make v
+minishell$ ls << EOF
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 28 [LEAKS?]
+make v
+minishell$ ls << EOF
+> line 1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 29 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 30 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 31 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> END1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 32 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> END1
+> line 2
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 33 [LEAKS?]
+make v
+minishell$ echo test | << EOF
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 34 [LEAKS?]
+make v
+minishell$ echo test | << EOF
+> line 1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 35 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 36 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 37 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> END1
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+Test 38 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> END1
+> line 2
+> CTRL+C
+minishell$ echo $?
+130
+minishell$ exit
+
+
+
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+🚀                                  CTRL+\ TESTS:                                🚀
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+
+Note: When we press CTRL+\ while running our minishell under valgrind, the signal path gets
+complicated. Normally, SIGQUIT goes directly to our shell, but with make v, valgrind becomes
+the parent process that receives the signal first, then forwards it to our minishell. Our shell
+correctly ignores it (we set signal(SIGQUIT, SIG_IGN) for interactive/heredoc modes), but 
+valgrind's process wrapper doesn't fully isolate the signal, so the make command also sees
+it and prints its own "Quit (core dumped)" message. This causes double messages and terminal
+corruption. 
+
+Test 39 [LEAKS?]
+make v
+minishell$ CTRL+\
+minishell$ make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 40 [LEAKS?]
+make v
+minishell$ sleep 3
+CTRL+\make: *** [Makefile:122: v] Quit (core dumped)
+Quit (core dumped)
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 41 [LEAKS?]
+make v
+minishell$ export VAR=value << EOF
+> line 1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 42 [LEAKS?]
+make v
+minishell$ cd /tmp << EOF
+> line 1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 43 [LEAKS?]
+make v
+minishell$ ls << EOF
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+includes   minishell_tester_LucasKuhn	test_sigABRT.sh  test_sigKILL.sh  test_sigTERM.sh
+libft	   minishell_tester_zstenger93	test_sigBUS.sh	 test_sigPIPE.sh  valgrind.supp
+Makefile   objects			test_sigFPE.sh	 test_sigQUIT.sh
+minishell  src				test_sigILL.sh	 test_sigSEGV.sh
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 44 [LEAKS?]
+make v
+minishell$ ls << EOF
+> line 1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+includes   minishell_tester_LucasKuhn	test_sigABRT.sh  test_sigKILL.sh  test_sigTERM.sh
+libft	   minishell_tester_zstenger93	test_sigBUS.sh	 test_sigPIPE.sh  valgrind.supp
+Makefile   objects			test_sigFPE.sh	 test_sigQUIT.sh
+minishell  src				test_sigILL.sh	 test_sigSEGV.sh
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 45 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+>
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 46 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+>
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 47 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> END1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 48 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> END1
+> line 2
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+line2
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 49 [LEAKS?]
+make v
+minishell$ echo test | << EOF
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 50 [LEAKS?]
+make v
+minishell$ echo test | << EOF
+> line 1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 51 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+>
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 52 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+>
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 53 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> END1
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+Test 54 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> END1
+> line 2
+> CTRL+\
+> make: *** [Makefile:122: v] Quit (core dumped)
+ENTER KEY PRESS
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$
+ENTER KEY PRESS
+           exit
+ENTER KEY PRESS
+minishell$ echo $?
+1
+
+
+
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+🚀                                  CTRL+D TESTS:                                🚀
+🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀🚀
+
+Test 55 [LEAKS?]
+make v
+minishell$ CTRL+D
+
+Test 56 [LEAKS?]
+make v
+minishell$ sleep 3
+CTRL+D
+CTRL+D
+CTRL+D
+CTRL+D
+CTRL+D
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 57 [LEAKS?]
+make v
+minishell$ export VAR=value << EOF
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$ echo $?
+0
+minishell$ echo $VAR
+value
+minishell$ exit
+
+Test 58 [LEAKS?]
+make v
+minishell$ cd /tmp << EOF
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$ echo $?
+0
+minishell$ pwd
+/pwd
+minishell$ exit
+
+Test 59 [LEAKS?]
+make v
+minishell$ ls << EOF
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+includes   minishell_tester_LucasKuhn	test_sigABRT.sh  test_sigKILL.sh  test_sigTERM.sh
+libft	   minishell_tester_zstenger93	test_sigBUS.sh	 test_sigPIPE.sh  valgrind.supp
+Makefile   objects			test_sigFPE.sh	 test_sigQUIT.sh
+minishell  src				test_sigILL.sh	 test_sigSEGV.sh
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 60 [LEAKS?]
+make v
+minishell$ ls << EOF
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+includes   minishell_tester_LucasKuhn	test_sigABRT.sh  test_sigKILL.sh  test_sigTERM.sh
+libft	   minishell_tester_zstenger93	test_sigBUS.sh	 test_sigPIPE.sh  valgrind.supp
+Makefile   objects			test_sigFPE.sh	 test_sigQUIT.sh
+minishell  src				test_sigILL.sh	 test_sigSEGV.sh
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 61 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 62 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 63 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+> line 2
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+line 2
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 64 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> END1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 65 [LEAKS?]
+make v
+minishell$ cat << END1 << END2
+> line 1
+> END1
+> line 2
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+line 2
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 66 [LEAKS?]
+make v
+minishell$ echo test | << EOF
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 67 [LEAKS?]
+make v
+minishell$ echo test | << EOF
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `EOF')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 68 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 69 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 70 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END1')
+> line 2
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$ echo $?
+0
+minishell$ exit
+
+Test 71 [LEAKS?]
+make v
+minishell$ echo test | << END1 | << END2
+> line 1
+> END1
+> line 2
+> CTRL+D
+minishell: warning: here-document at line N delimited by end-of-file (wanted `END2')
+minishell$ echo $?
+0
+minishell$ exit
