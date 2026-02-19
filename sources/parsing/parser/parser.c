@@ -6,7 +6,7 @@
 /*   By: migusant <migusant@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/19 22:18:38 by migusant          #+#    #+#             */
-/*   Updated: 2026/02/19 15:26:22 by migusant         ###   ########.fr       */
+/*   Updated: 2026/02/19 18:55:06 by migusant         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ static t_token	*build_cmd(t_cmd **cmd_list, t_token *current_token)
 	return (current_token);
 }
 
-static void	remove_empty_word_tokens(void)
+void	remove_empty_word_tokens(void)
 {
 	t_token	*current;
 	t_token	*prev;
@@ -74,7 +74,7 @@ static void	remove_empty_word_tokens(void)
 	while (current)
 	{
 		if (current->type == TOKEN_WORD
-			&& current->value && current->value[0] == '\0')
+			&& current->value && is_only_whitespace(current->value))
 		{
 			temp = current;
 			if (prev)
@@ -98,7 +98,6 @@ int	parser(void)
 	if (MINISHELL_DEBUG)
 		print_tokens(shell()->toks, "TOKENS (raw)");
 	expand_tokens();
-	remove_empty_word_tokens();
 	if (!shell()->toks)
 		return (shell()->cmds = NULL, 1);
 	mark_word_split(shell()->toks);

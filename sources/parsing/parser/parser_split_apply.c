@@ -6,11 +6,38 @@
 /*   By: migusant <migusant@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/05 10:13:38 by migusant          #+#    #+#             */
-/*   Updated: 2026/02/16 23:03:08 by migusant         ###   ########.fr       */
+/*   Updated: 2026/02/19 18:56:04 by migusant         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../../includes/parsing.h"
+
+static void	normalize_ifs(char *str)
+{
+	int		i;
+	int		in_quote;
+	char	quote_type;
+
+	i = 0;
+	in_quote = 0;
+	quote_type = 0;
+	while (str[i])
+	{
+		if (!in_quote && (str[i] == '"' || str[i] == '\''))
+		{
+			in_quote = 1;
+			quote_type = str[i];
+		}
+		else if (in_quote && str[i] == quote_type)
+		{
+			in_quote = 0;
+			quote_type = 0;
+		}
+		else if (!in_quote && (str[i] == '\t' || str[i] == '\n'))
+			str[i] = ' ';
+		i++;
+	}
+}
 
 static int	replace_first_word(t_token *current, char *new_value)
 {
@@ -58,19 +85,6 @@ static void	insert_split_tokens(t_token *current, char **words)
 	insert_remaining_words(current, words);
 }
 
-static void	normalize_ifs(char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str[i])
-	{
-		if (str[i] == '\t' || str[i] == '\n')
-			str[i] = ' ';
-		i++;
-	}
-}
-
 void	apply_word_split(t_token **tokens)
 {
 	t_token	*current;
@@ -84,7 +98,7 @@ void	apply_word_split(t_token **tokens)
 		if (current->type == TOKEN_WORD && current->wd_split == 1)
 		{
 			normalize_ifs(current->value);
-			words = ft_split(current->value, ' ');
+			words = split_quote_aware(current->value);
 			if (words)
 			{
 				insert_split_tokens(current, words);
@@ -93,4 +107,5 @@ void	apply_word_split(t_token **tokens)
 		}
 		current = next;
 	}
+	remove_empty_word_tokens();
 }

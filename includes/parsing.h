@@ -6,7 +6,7 @@
 /*   By: migusant <migusant@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/19 22:10:31 by migusant          #+#    #+#             */
-/*   Updated: 2026/02/17 14:19:24 by migusant         ###   ########.fr       */
+/*   Updated: 2026/02/19 18:54:00 by migusant         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,7 @@ void	add_token(t_token **head, t_token *new_token);
 
 // lexer_checks.c
 int		is_whitespace(char c);
+int		is_only_whitespace(char *str);
 int		is_special_char(char c);
 
 // lexer_utils.c
@@ -107,6 +108,7 @@ int		check_syntax(void);
 
 // parser.c
 void	add_cmd_to_list(t_cmd **head, t_cmd *new_cmd);
+void	remove_empty_word_tokens(void);
 int		parser(void);
 
 // parser_utils.c
@@ -120,6 +122,9 @@ void	mark_heredoc_expansion(t_token *tokens);
 
 // parser_split_apply.c
 void	apply_word_split(t_token **tokens);
+
+// parser_split_apply_utils.c
+char	**split_quote_aware(char *str);
 
 // expander.c
 char	*expand_token(char *token);
