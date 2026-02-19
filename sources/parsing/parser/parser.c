@@ -6,7 +6,7 @@
 /*   By: migusant <migusant@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/19 22:18:38 by migusant          #+#    #+#             */
-/*   Updated: 2026/02/15 22:41:38 by migusant         ###   ########.fr       */
+/*   Updated: 2026/02/19 15:26:22 by migusant         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,9 +101,9 @@ int	parser(void)
 	remove_empty_word_tokens();
 	if (!shell()->toks)
 		return (shell()->cmds = NULL, 1);
+	mark_word_split(shell()->toks);
 	if (MINISHELL_DEBUG)
 		print_tokens(shell()->toks, "TOKENS (after expansion)");
-	mark_word_split(shell()->toks);
 	apply_word_split(&shell()->toks);
 	if (MINISHELL_DEBUG)
 		print_tokens(shell()->toks, "TOKENS (after word splitting)");
