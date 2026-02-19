@@ -6,7 +6,7 @@
 #    By: migusant <migusant@student.42lisboa.com    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2025/11/19 22:09:11 by migusant          #+#    #+#              #
-#    Updated: 2026/02/07 00:21:12 by migusant         ###   ########.fr        #
+#    Updated: 2026/02/19 18:52:55 by migusant         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -66,7 +66,7 @@ $(NAME): $(LIBFT) $(OBJ)
 v: all
 	@clear && valgrind --leak-check=full --show-leak-kinds=all \
 		--track-fds=yes --trace-children=yes --track-origins=yes \
-		--suppressions=valgrind.supp -s ./$(NAME)
+		--suppressions=$(shell pwd)/valgrind.supp -s ./$(NAME)
 
 $(LIBFT):
 	@echo "$(YELLOW)Building libft...$(RESET)"
